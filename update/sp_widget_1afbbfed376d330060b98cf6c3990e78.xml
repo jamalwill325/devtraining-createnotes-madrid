@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope, $rootScope) {
+  /* widget controller */
+  var c = this;
+	//conosle.log("Work");
+	//Retrieve Data from selected Note form RootScope Hiarchy
+	//Widgets on same page can share data through the $rootScope
+	$rootScope.$on('selectedNote', function(event, data) {
+		
+		console.log('Listener-$on- found emitted NoteID : ' + data);
+			
+		//Get the selected record's field values from the server to display in the Notes Body Widget
+		//calls the Server script and passes custom input- Client Server Global Function
+		c.server.get({
+			//Create action to use in Server Script to get info
+			action: 'getNote',
+			noteID: data
+			//If c.server.get receives a response from the serve, run the then() function logic
+		}).then(function(r) {
+			
+			c.data.title = r.data.note.title;
+			c.data.note = r.data.note.note;
+			c.data.noteID = r.data.note.sys_id;
+			
+			console.log("data: " + c.data.title );
+			c.server.update();
+		});
+	});
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>notes_body</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>Notes Body</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+  /* populate the 'data' object */
+  /* e.g., data.table = $sp.getValue('table'); */
+	
+	
+	//Respond to the getNote action called from the Client Script
+	//input is the data obj received from Client Script Controller (c)
+	if (input && input.noteID){
+		//Set Table to read Records from
+		var note = new GlideRecord('x_snc_createnotes_note');
+		//If noteID matches a sys_id in a the table
+		if (note.get(input.noteID)){
+			//If input obj has this action name
+			if (input.action == 'getNote'){
+				//Create an empty object
+				data.note = {};
+				//Get the display values for the number, title, and sys_id fields and put those values into the data.note obj
+				//Copies values for the specificed field names from the GlideRecord into data paramters
+				$sp.getRecordValues(data.note, note, "title, note, sys_id");
+				console.log("Record: " + data.note.title );
+			}
+		}
+	}
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-21 14:33:15</sys_created_on>
+        <sys_id>1afbbfed376d330060b98cf6c3990e78</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>Notes Body</sys_name>
+        <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+        <sys_update_name>sp_widget_1afbbfed376d330060b98cf6c3990e78</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-06-03 15:21:51</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-default" ng-show="c.data.noteID">
+	  <div class="panel-heading clearfix">
+	    <div class="row">
+	      <div class="col-md-12">
+          <!--ng-model: Angular that references data to use-->
+	        <input class="form-control" id="note-title" ng-model="c.data.title" />
+	      </div>
+	    </div>
+	  </div>
+	  <div class="panel-body">
+	    <textarea class="form-control" id="note-body" ng-model="c.data.note" ></textarea>
+	  </div>
+	</div>]]></template>
+    </sp_widget>
+</record_update>

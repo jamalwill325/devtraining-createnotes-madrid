@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($rootScope, $scope) {
+  /* widget controller */
+  var c = this;
+	
+	c.selectNoteRecord = function(idx) {
+		//Retrieve select Record in list Note ID
+		var id = c.data.notes[idx].sys_id;
+		console.log('Note ID Emitting: ' + id);
+		$rootScope.noteID = id;
+		//console.log(' Root Note ID Emitting: ' + $rootScope.noteID);
+		//Send clicked on id to the rootScope Hiarchy to use for other widget
+		$rootScope.$emit('selectedNote', id);
+		
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>notes_list</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>Notes List</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+  /* populate the 'data' object */
+  /* e.g., data.table = $sp.getValue('table'); */
+	
+	//Create notes property on the data obj which will contain an array of obj
+	//Create an array to populate with notes
+	data.notes = [];
+	
+	console.log("WORKING 1");
+	//Query the database to find all Note table records for the currently logged in user 
+	var noteGR = new GlideRecord('x_snc_createnotes_note');
+	noteGR.addQuery('user', gs.getUser().getID());
+	//Sort the records by descending order bases on the sys_created_on date field value
+	noteGR.orderByDesc('sys_created_on');
+	noteGR.query();
+		console.log("WORKING 2");
+	//For each of the Note records returned. 
+	while(noteGR.next()){
+		//Create an empty object
+		var noteObj = {};
+			console.log("WORKING ");
+		//Get the display values for the number, title, and sys_id fields and put those values into the noteObj obj
+		//Use service portal helper method to get some display values 
+		$sp.getRecordDisplayValues(noteObj, noteGR, 'number,title,sys_id');
+		//Get the first 20 characters of the description field and add that value to the noteObj Object
+		console.log("Number: " + noteGR.getValue('number') + " | Title: " + noteGR.getValue('title') + " | note body: " + noteGR.getValue('note')  );
+		noteObj.note = noteGR.getValue('note').slice(0,20);
+		//Push the noteObj into the notes array 
+		data.notes.push(noteObj);
+		//console.log(data.notes);
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-21 14:31:13</sys_created_on>
+        <sys_id>a48bffad376d330060b98cf6c3990ee2</sys_id>
+        <sys_mod_count>37</sys_mod_count>
+        <sys_name>Notes List</sys_name>
+        <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+        <sys_update_name>sp_widget_a48bffad376d330060b98cf6c3990ee2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-06-03 15:06:46</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-default">
+	  <div class="panel-heading clearfix">
+	    <h3 class="panel-title pull-left">
+	      ${Notes}
+	    </h3>
+</div>
+ <div class="list-group">
+    <!--ng-repeat: Angular that iterates over properties on an obj -->
+    <!--ng-click: Angular for when a user clicks a Note record in the list. -->
+    <a class="list-group-item" ng-click="c.selectNoteRecord($index)" ng-repeat="note in data.notes">
+      <h4 class="list-group-item-heading">
+      {{note.title}}
+      </h4>
+      <p class="list-group-item-text">
+      	{{note.note}}
+      </p>
+    </a>
+ </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>
